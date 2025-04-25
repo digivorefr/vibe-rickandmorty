@@ -1,29 +1,59 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getLocations, searchLocations } from "@/lib/api";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { getLocations, searchLocations, Location } from "@/lib/api";
+import { Search, ArrowLeft } from "lucide-react";
+import QueryProvider from "@/components/query-provider";
 import Link from "next/link";
+import { useInView } from "react-intersection-observer";
+import { useEffect } from "react";
 
-export default function LocationsPage() {
-  const [page, setPage] = useState(1);
+interface ApiResponse {
+  info: {
+    count: number;
+    pages: number;
+    next: string | null;
+    prev: string | null;
+  };
+  results: Location[];
+}
+
+function LocationsList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { ref, inView } = useInView();
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["locations", page, debouncedSearch],
-    queryFn: () =>
+  const {
+    data,
+    isLoading,
+    isError,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery<ApiResponse>({
+    queryKey: ["locations", debouncedSearch],
+    queryFn: ({ pageParam = 1 }) =>
       debouncedSearch
-        ? searchLocations(debouncedSearch, page)
-        : getLocations(page),
+        ? searchLocations(debouncedSearch, pageParam as number)
+        : getLocations(pageParam as number),
+    getNextPageParam: (lastPage: ApiResponse) =>
+      lastPage.info.next
+        ? parseInt(lastPage.info.next.split("=")[1])
+        : undefined,
+    initialPageParam: 1,
   });
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, fetchNextPage]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     setTimeout(() => {
       setDebouncedSearch(value);
-      setPage(1);
     }, 500);
   };
 
@@ -47,6 +77,14 @@ export default function LocationsPage() {
 
   return (
     <div className="brutalist-container">
+      <Link
+        href="/"
+        className="brutalist-button inline-flex items-center gap-2 mb-8"
+      >
+        <ArrowLeft className="w-6 h-6" />
+        Back to Home
+      </Link>
+
       <div className="flex items-center mb-8">
         <div className="relative flex-1">
           <input
@@ -60,38 +98,40 @@ export default function LocationsPage() {
         </div>
       </div>
 
-      <div className="brutalist-grid">
-        {data?.results.map((location) => (
-          <Link
-            href={`/locations/${location.id}`}
-            key={location.id}
-            className="brutalist-card group"
-          >
-            <h2 className="text-xl font-bold mb-4">{location.name}</h2>
-            <p className="mb-2">Type: {location.type}</p>
-            <p className="mb-2">Dimension: {location.dimension}</p>
-            <p>Residents: {location.residents.length}</p>
-          </Link>
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {data?.pages.map((page) =>
+          page.results.map((location) => (
+            <Link
+              href={`/locations/${location.id}`}
+              key={location.id}
+              className="brutalist-card"
+            >
+              <h2 className="text-xl font-bold mb-2">{location.name}</h2>
+              <p className="mb-1">Type: {location.type}</p>
+              <p className="mb-1">Dimension: {location.dimension}</p>
+              <p>Residents: {location.residents.length}</p>
+            </Link>
+          ))
+        )}
       </div>
 
-      <div className="flex justify-center items-center mt-8 gap-4">
-        <button
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          disabled={page === 1}
-          className="brutalist-button disabled:opacity-50"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        <span className="text-xl font-bold">Page {page}</span>
-        <button
-          onClick={() => setPage((p) => p + 1)}
-          disabled={!data?.info.next}
-          className="brutalist-button disabled:opacity-50"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
+      <div ref={ref} className="mt-8 text-center">
+        {isFetchingNextPage ? (
+          <div className="text-xl font-bold">Loading more...</div>
+        ) : hasNextPage ? (
+          <div className="text-xl font-bold">Load more</div>
+        ) : (
+          <div className="text-xl font-bold">No more locations</div>
+        )}
       </div>
     </div>
+  );
+}
+
+export default function LocationsPage() {
+  return (
+    <QueryProvider>
+      <LocationsList />
+    </QueryProvider>
   );
 }

@@ -5,15 +5,16 @@ import { getCharacter } from "@/lib/api";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import QueryProvider from "@/components/query-provider";
 
-export default function CharacterPage({ params }: { params: { id: string } }) {
+function CharacterDetail({ id }: { id: string }) {
   const {
     data: character,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["character", params.id],
-    queryFn: () => getCharacter(parseInt(params.id)),
+    queryKey: ["character", id],
+    queryFn: () => getCharacter(parseInt(id)),
   });
 
   if (isLoading) {
@@ -93,5 +94,13 @@ export default function CharacterPage({ params }: { params: { id: string } }) {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CharacterPage({ params }: { params: { id: string } }) {
+  return (
+    <QueryProvider>
+      <CharacterDetail id={params.id} />
+    </QueryProvider>
   );
 }

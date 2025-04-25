@@ -1,11 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@layer theme, base, components, utilities;
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
-
-@import "tailwindcss";
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -151,5 +152,5 @@
 }
 
 .brutalist-input {
-  @apply w-full border-4 border-black p-4 focus:outline-none focus:ring-4 ring-black;
+  @apply w-full border-4 border-black py-4 px-12 focus:outline-none focus:ring-4 ring-black;
 }
