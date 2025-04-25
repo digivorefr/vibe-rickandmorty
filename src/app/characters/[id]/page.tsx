@@ -1,38 +1,20 @@
-"use client";
-
-import { useQuery } from "@tanstack/react-query";
 import { getCharacter } from "@/lib/api";
+import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import QueryProvider from "@/components/query-provider";
 
-function CharacterDetail({ id }: { id: string }) {
-  const {
-    data: character,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["character", id],
-    queryFn: () => getCharacter(parseInt(id)),
-  });
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }> | { id: string };
+}) {
+  // Handle both Promise and direct object formats
+  const { id } = "then" in params ? await params : params;
+  const character = await getCharacter(parseInt(id));
 
-  if (isLoading) {
-    return (
-      <div className="brutalist-container">
-        <div className="text-2xl font-bold text-center">Loading...</div>
-      </div>
-    );
-  }
-
-  if (isError || !character) {
-    return (
-      <div className="brutalist-container">
-        <div className="text-2xl font-bold text-center text-red-600">
-          Error loading character
-        </div>
-      </div>
-    );
+  if (!character) {
+    notFound();
   }
 
   return (
@@ -94,13 +76,5 @@ function CharacterDetail({ id }: { id: string }) {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function CharacterPage({ params }: { params: { id: string } }) {
-  return (
-    <QueryProvider>
-      <CharacterDetail id={params.id} />
-    </QueryProvider>
   );
 }

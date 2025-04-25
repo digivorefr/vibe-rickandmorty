@@ -1,36 +1,13 @@
-"use client";
-
-import { useQuery } from "@tanstack/react-query";
 import { getEpisode } from "@/lib/api";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { notFound } from "next/navigation";
 
-export default function EpisodePage({ params }: { params: { id: string } }) {
-  const {
-    data: episode,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["episode", params.id],
-    queryFn: () => getEpisode(parseInt(params.id)),
-  });
+export default async function Page({ params }: { params: { id: string } }) {
+  const episode = await getEpisode(parseInt(params.id));
 
-  if (isLoading) {
-    return (
-      <div className="brutalist-container">
-        <div className="text-2xl font-bold text-center">Loading...</div>
-      </div>
-    );
-  }
-
-  if (isError || !episode) {
-    return (
-      <div className="brutalist-container">
-        <div className="text-2xl font-bold text-center text-red-600">
-          Error loading episode
-        </div>
-      </div>
-    );
+  if (!episode) {
+    notFound();
   }
 
   return (

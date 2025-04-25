@@ -1,36 +1,13 @@
-"use client";
-
-import { useQuery } from "@tanstack/react-query";
 import { getLocation } from "@/lib/api";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { notFound } from "next/navigation";
 
-export default function LocationPage({ params }: { params: { id: string } }) {
-  const {
-    data: location,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["location", params.id],
-    queryFn: () => getLocation(parseInt(params.id)),
-  });
+export default async function Page({ params }: { params: { id: string } }) {
+  const location = await getLocation(parseInt(params.id));
 
-  if (isLoading) {
-    return (
-      <div className="brutalist-container">
-        <div className="text-2xl font-bold text-center">Loading...</div>
-      </div>
-    );
-  }
-
-  if (isError || !location) {
-    return (
-      <div className="brutalist-container">
-        <div className="text-2xl font-bold text-center text-red-600">
-          Error loading location
-        </div>
-      </div>
-    );
+  if (!location) {
+    notFound();
   }
 
   return (
