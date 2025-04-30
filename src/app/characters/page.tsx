@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { getCharacters, searchCharacters, Character } from "@/lib/api";
+import { useDebounce } from "@/lib/hooks";
 import Image from "next/image";
 import { Search, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -22,7 +23,7 @@ interface ApiResponse {
 
 function CharactersList() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 500);
   const { ref, inView } = useInView();
 
   const {
@@ -53,9 +54,6 @@ function CharactersList() {
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    setTimeout(() => {
-      setDebouncedSearch(value);
-    }, 500);
   };
 
   if (isLoading) {

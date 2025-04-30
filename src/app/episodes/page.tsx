@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { getEpisodes, searchEpisodes, Episode } from "@/lib/api";
+import { useDebounce } from "@/lib/hooks";
 import { Search, ArrowLeft } from "lucide-react";
 import QueryProvider from "@/components/query-provider";
 import Link from "next/link";
@@ -21,7 +22,7 @@ interface ApiResponse {
 
 function EpisodesList() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 500);
   const { ref, inView } = useInView();
 
   const {
@@ -52,9 +53,6 @@ function EpisodesList() {
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    setTimeout(() => {
-      setDebouncedSearch(value);
-    }, 500);
   };
 
   if (isLoading) {
