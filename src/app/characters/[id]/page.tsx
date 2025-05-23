@@ -1,6 +1,6 @@
 import { getCharacter } from "@/lib/api";
 import { notFound } from "next/navigation";
-import Image from "next/image";
+
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -29,11 +29,10 @@ export default async function Page({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="relative aspect-square overflow-hidden border-4 border-black">
-          <Image
+          <img
             src={character.image}
             alt={character.name}
-            fill
-            className="object-cover"
+            className="object-cover w-full h-full"
           />
         </div>
 

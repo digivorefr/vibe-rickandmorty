@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { getCharacters, searchCharacters, Character } from "@/lib/api";
 import { useDebounce } from "@/lib/hooks";
-import Image from "next/image";
+
 import { Search, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import QueryProvider from "@/components/query-provider";
@@ -112,11 +112,10 @@ function CharactersList() {
               className="brutalist-card group flex flex-col"
             >
               <div className="relative aspect-square mb-4 overflow-hidden border-4 border-black w-full">
-                <Image
+                <img
                   src={character.image}
                   alt={character.name}
-                  fill
-                  className="object-cover"
+                  className="object-cover w-full h-full"
                 />
               </div>
               <div className="flex-1">
